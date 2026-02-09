@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import os
-import openai
+import httpx
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
@@ -18,8 +18,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Set OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Mistral AI configuration
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
+MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
 
 HTML_CONTENT = """
 <!DOCTYPE html>
@@ -168,10 +169,10 @@ HTML_CONTENT = """
 </head>
 <body>
     <div class="container">
-        <div class="header">💬 AI Assistant</div>
+        <div class="header">💬 AI Assistant (Powered by Mistral AI)</div>
         <div class="chat-container" id="chatContainer">
             <div class="message assistant">
-                <div class="message-content">Hello! I'm your AI assistant. How can I help you today?</div>
+                <div class="message-content">Hello! I'm your AI assistant powered by Mistral AI. How can I help you today?</div>
             </div>
         </div>
         <div class="input-container">
@@ -262,19 +263,37 @@ async def chat(request: Request):
         if not message:
             return JSONResponse({"error": "No message provided"})
         
-        # Call OpenAI API
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful AI assistant."},
-                {"role": "user", "content": message}
-            ],
-            max_tokens=500,
-            temperature=0.7
-        )
+        if not MISTRAL_API_KEY:
+            return JSONResponse({"error": "Mistral API key not configured"})
         
-        assistant_message = response.choices[0].message.content
-        return JSONResponse({"response": assistant_message})
+        # Call Mistral AI API
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                MISTRAL_API_URL,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {MISTRAL_API_KEY}"
+                },
+                json={
+                    "model": "mistral-tiny",
+                    "messages": [
+                        {"role": "system", "content": "You are a helpful AI assistant."},
+                        {"role": "user", "content": message}
+                    ],
+                    "max_tokens": 500,
+                    "temperature": 0.7
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                assistant_message = result["choices"][0]["message"]["content"]
+                return JSONResponse({"response": assistant_message})
+            else:
+                error_msg = f"Mistral API error: {response.status_code}"
+                logger.error(f"{error_msg} - {response.text}")
+                return JSONResponse({"error": error_msg})
         
     except Exception as e:
         logger.error(f"Chat error: {e}")
