@@ -4,12 +4,12 @@ import os
 import logging
 from dotenv import load_dotenv
 # from services.discord_service import DiscordService
-from services.whatsapp_service import WhatsAppService
-from services.imessage_service import iMessageService
-from services.ai_service import AIService
-from services.email_service import EmailService
-from services.calendar_service import CalendarService
-from services.reminder_service import ReminderService
+# from services.whatsapp_service import WhatsAppService
+# from services.imessage_service import iMessageService
+# from services.ai_service import AIService
+# from services.email_service import EmailService
+# from services.calendar_service import CalendarService
+# from services.reminder_service import ReminderService
 
 load_dotenv()
 
@@ -18,22 +18,22 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize services
-ai_service = AIService()
-email_service = EmailService()
-calendar_service = CalendarService()
-reminder_service = ReminderService()
+# ai_service = AIService()
+# email_service = EmailService()
+# calendar_service = CalendarService()
+# reminder_service = ReminderService()
 
 # Platform services
-# discord_service = DiscordService(ai_service, email_service, calendar_service, reminder_service)
+# # discord_service = DiscordService(ai_service, email_service, calendar_service, reminder_service)
 whatsapp_service = WhatsAppService(ai_service, email_service, calendar_service, reminder_service)
-imessage_service = iMessageService(ai_service, email_service, calendar_service, reminder_service)
+# imessage_service = iMessageService(ai_service, email_service, calendar_service, reminder_service)
 
 # @app.get("/")
 async def health():
     return {"status": "AI Assistant running", "version": "1.0.0"}
 
 # WhatsApp Webhook
-@app.get("/whatsapp/webhook")
+# @app.get("/whatsapp/webhook")
 async def whatsapp_verify(request: Request):
     verify_token = request.query_params.get("hub.verify_token")
     challenge = request.query_params.get("hub.challenge")
