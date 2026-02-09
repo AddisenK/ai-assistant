@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+*.egg-info/
+
+# Environment Variables
+.env
+.env.local
+
+# Credentials (NEVER commit these!)
+credentials.json
+token.json
+*.pem
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
