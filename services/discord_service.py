@@ -66,8 +66,12 @@ class DiscordService:
             await self.bot.process_commands(message)
     
     async def handle_interaction(self, data: dict):
-        """Handle Discord interactions (for slash commands)"""
-        return {"type": 4, "data": {"content": "Interaction received"}}
+        # Handle Discord's PING verification
+                if data.get("type") == 1:
+                                return {"type": 1}  # PONG response
+                            
+                # Handle other interaction types here
+            return {"type": 4, "data": {"content": "Interaction received"}}
     
     def is_running(self) -> bool:
         """Check if bot is running"""
